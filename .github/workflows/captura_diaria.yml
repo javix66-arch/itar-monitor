@@ -1,0 +1,37 @@
+name: Captura diaria ITAR - Cemento
+
+on:
+  schedule:
+    # Todos los días a las 12:00 UTC = 09:00 Argentina (UTC-3)
+    - cron: "0 12 * * *"
+  workflow_dispatch:
+    # Permite ejecutarlo manualmente desde GitHub con un botón
+
+jobs:
+  captura:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Descargar repositorio
+        uses: actions/checkout@v4
+
+      - name: Instalar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Instalar dependencias
+        run: |
+          pip install playwright
+          playwright install chromium
+          playwright install-deps chromium
+
+      - name: Ejecutar captura
+        run: python captura.py
+
+      - name: Guardar captura como artefacto
+        uses: actions/upload-artifact@v4
+        with:
+          name: captura-${{ github.run_id }}
+          path: capturas/
+          retention-days: 90
